@@ -1,157 +1,177 @@
-// /* STEP 1
-// der skabes forbindelse til canvas elementet i html filen.*/
+/*Dette er den færdige kode til hele spillet uden kommentarer om hvornår der er tilføjet 
+nyt og hvad det betyder de forskellige ting. Blot hele den færdige kode. Det eneste der 
+burde rettes til, er når man styrer paddlen med musen, at så forsvinder halvdelen af den
+ud i siderne.*/
 
-var canvas = document.getElementById("myCanvas"); 
-var ctx = canvas.getContext("2d"); 
-
-// //Der skabes et kvadrat
-// ctx.beginPath(); 
-// ctx.rect(20, 40, 50, 50); 
-// ctx.fillStyle = "#FF0000"; 
-// ctx.fill(); 
-// ctx.closePath();
-
-// //Der skabes en cirkel
-// ctx.beginPath();
-// ctx.arc(240, 160, 20, 0, Math.PI*2, false);
-// ctx.fillStyle = "green";
-// ctx.fill();
-// ctx.closePath();
-
-// //Der skabes en rektangel
-// ctx.beginPath();
-// ctx.rect(160, 10, 100, 40);
-// ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
-// ctx.stroke();
-// ctx.closePath();
-//======================================================================
-
-
-/* STEP 2 - Make it Move!*/
-
-/*Vi laver en bold og får den til at bevæge sig. Se steps her: 
-https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Move_the_ball */
-
-// var x = canvas.width/2;
-// var y = canvas.height-30;
-
-// var dx = 2;
-// var dy = -2;
-
-// function drawBall(){
-//     ctx.beginPath();
-//     ctx.arc(x, y, 10, 0, Math.PI*2);
-//     ctx.fillStyle = "#0095DD";
-//     ctx.fill();
-//     ctx.closePath();
-// }
-
-// function draw(){
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-//     drawBall();
-//     x += dx;
-//     y += dy;
-// }
-// setInterval(draw, 10);
-//======================================================================
-
-
-/* STEP 3 - Make it Bounce!
-
-Jeg har kopieret det ovenfor, for at kunne se hvad der bliver ændret 
-og skriver så små kommentarer ud for de linjer der blievr opdateret 
-her i forhold til de ovenfor i step 2.*/
-
-// var x = canvas.width/2;
-// var y = canvas.height-30;
-
-// var dx = 2;
-// var dy = -2;
-
-// var ballRadius = 10; //Ny tilføjelse
-
-// function drawBall(){
-//     ctx.beginPath();
-//     ctx.arc(x, y, ballRadius, 0, Math.PI*2); //opdateret med ballRadius
-//     ctx.fillStyle = "#0095DD";
-//     ctx.fill();
-//     ctx.closePath();
-// }
-
-// function draw(){
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-//     drawBall();
-//     x += dx;
-//     y += dy;
-
-//     //Bounce off of Top og bund = Ny tilføjelse
-//     if(x + dx > canvas.width-ballRadius || x +dx < ballRadius){
-//        dx = -dx
-//     }
-
-//     //Bounce off of left and right = Ny tilføjelse
-//     if(y + dy > canvas.height-ballRadius || y + dy < ballRadius){
-//         dy = -dy
-//     }
-// }
-// setInterval(draw, 10);
-//======================================================================
-
-
-/* STEP 4 - Make a paddle & keyboard controls!
-
-Jeg har kopieret det ovenfor, for at kunne se hvad der bliver ændret 
-og skriver så små kommentarer ud for de linjer der blievr opdateret 
-her i forhold til de ovenfor i step 3.*/
-
-var x = canvas.width/2;
-var y = canvas.height-30;
-
-var dx = 2;
-var dy = -2;
-
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
 var ballRadius = 10;
-
-//Paddle-variablerne her under er nyt tilføjet
+var x = canvas.width / 2;
+var y = canvas.height - 30;
+var dx = 3;
+var dy = -3;
 var paddleHeight = 10;
 var paddleWidth = 75;
-var paddleX = (canvas.width-paddleWidth)/2;
+var paddleX = (canvas.width - paddleWidth) / 2;
+var rightPressed = false;
+var leftPressed = false;
+var brickRowCount = 3;
+var brickColumnCount = 5;
+var brickWidth = 75;
+var brickHeight = 20;
+var brickPadding = 10;
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+var score = 0;
+var lives = 3;
 
-function drawBall(){
+var bricks = [];
+for (c = 0; c < brickColumnCount; c++) {
+    bricks[c] = [];
+    for (r = 0; r < brickRowCount; r++) {
+        bricks[c][r] = { x: 0, y: 0, status: 1 }; 
+    }
+}
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("mousemove", mouseMoveHandler, false); 
+
+function mouseMoveHandler(e){
+    var relativeX = e.clientX - canvas.offsetLeft;
+    if(relativeX > 0 && relativeX < canvas.width){
+        paddleX = relativeX - paddleWidth/2;
+    }
+}
+
+function keyDownHandler(e) {
+    if (e.keyCode == 39) {
+        rightPressed = true;
+    }
+    else if (e.keyCode == 37) {
+        leftPressed = true;
+    }
+};
+
+function keyUpHandler(e) {
+    if (e.keyCode == 39) {
+        rightPressed = false;
+    }
+    else if (e.keyCode == 37) {
+        leftPressed = false;
+    }
+};
+
+function collisionDetection(){
+    for(c=0; c < brickColumnCount; c++){
+        for(r=0; r < brickRowCount; r++){
+            var b = bricks[c][r];
+            if(b.status == 1) { 
+                if(x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight){
+                    dy = -dy;
+                    b.status = 0; 
+                    score++;                     
+                    if(score == brickRowCount*brickColumnCount){
+                        alert("YOU WIN, CONGRATULATIONS!");
+                        document.location.reload();
+                    }
+                }
+            }
+        }
+    }
+};
+
+function drawScore(){
+    ctx.font = "16px Arial";
+    ctx.fullStyle = "#0095DD";
+    ctx.fillText("Score: " + score, 8, 20); 
+}
+
+function drawLives(){
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Lives: " + lives, canvas.width-65, 20)
+}
+
+function drawBall() {
     ctx.beginPath();
-    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+    ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
     ctx.fillStyle = "#0095DD";
     ctx.fill();
     ctx.closePath();
-}
+};
 
-//Vi laver en paddle - nyt tilføjet
-function drawPaddle(){
+function drawPaddle() {
     ctx.beginPath();
-    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+    ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
     ctx.fillStyle = "#0095DD";
     ctx.fill();
     ctx.closePath();
+};
+
+function drawBricks(){
+    for(c=0; c < brickColumnCount; c++){
+        for(r=0; r < brickRowCount; r++){
+            if(bricks [c][r].status == 1){
+                var brickX = (c*(brickWidth + brickPadding)) + brickOffsetLeft;
+                var brickY = (r*(brickHeight + brickPadding)) + brickOffsetTop;
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                ctx.fillstyle = "#0095DD";
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+    }
 }
 
-function draw(){
+function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBricks(); 
     drawBall();
-    x += dx;
-    y += dy;
+    drawPaddle();
+    drawScore(); 
+    drawLives();
+    collisionDetection();
 
     //Bounce off of Top og bund
-    if(x + dx > canvas.width-ballRadius || x +dx < ballRadius){
-       dx = -dx
+    if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+        dx = -dx
     }
 
-    //Bounce off of left and right
-    if(y + dy > canvas.height-ballRadius || y + dy < ballRadius){
-        dy = -dy
+    if (y + dy < ballRadius) {
+        dy = -dy;
     }
-}
-setInterval(draw, 10);
+    else if (y + dy > canvas.height - ballRadius) {
+        if (x > paddleX && x < paddleX + paddleWidth) {
+            dy = -dy;
+        }
+        else {
+            lives--;
+            if(!lives){
+                alert("GAME OVER");
+                document.location.reload();
+            }
+            else{
+                x = canvas.width/2;
+                y = canvas.height-30;
+                paddleX = (canvas.width-paddleWidth)/2;
+            }
+        }
+    }
 
-//==============================================================
-// NÅET TIL STEP 4 "Allowing the user to control the paddle"!!!!
-//==============================================================
+    if (rightPressed && paddleX < canvas.width - paddleWidth) {
+        paddleX += 7;
+    }
+    else if (leftPressed && paddleX > 0) {
+        paddleX -= 7;
+    }
+
+    x += dx;
+    y += dy;
+    requestAnimationFrame(draw);
+};
+
+draw();

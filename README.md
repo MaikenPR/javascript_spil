@@ -2,7 +2,7 @@
 
 In this step-by-step tutorial we create a simple MDN Breakout game written entirely in pure JavaScript and rendered on HTML5 `<canvas>`.
 
-_Kilde: https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript_
+_Kilde: https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript _
 
 ### Step 1
 
